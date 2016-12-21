@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.Consts;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -17,7 +15,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -26,10 +23,11 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import litfam.backend.yelpclient.domain.BusinessesListDO;
 
 public class YelpClient {
 	
@@ -38,7 +36,7 @@ public class YelpClient {
 	public static final String AUTH_URL = "https://api.yelp.com/oauth2/token";
 	
 	public static final String QUERY_URL = "https://api.yelp.com/v3/businesses/search?";
-	public static final String TEST_QUERY = "term=delis&latitude=37.786882&longitude=-122.399972";
+	public static final String TEST_QUERY = "term=fancy&latitude=38.8736&longitude=-77.3899";
 
 	private static AuthenticationPojo authObj;
 	
@@ -87,14 +85,15 @@ public class YelpClient {
 		        if (entity == null) {
 		            throw new ClientProtocolException("Response contains no content");
 		        }
-		        //create a gson object to allow conversion of json to pogo
-		        Gson gson = new GsonBuilder().create();
+
 		        ContentType contentType = ContentType.getOrDefault(entity);
 		        Charset charset = contentType.getCharset();
 		        //read character stream
 		        Reader reader = new InputStreamReader(entity.getContent(), charset);
 		        //convert json to pogo using gson
+		        Gson gson = new GsonBuilder().create();
 		        AuthenticationPojo authPojo = gson.fromJson(reader, AuthenticationPojo.class);
+		        reader.close();
 		        return authPojo;       
 			}
 
@@ -121,24 +120,36 @@ public class YelpClient {
 		try {
 		    
 		    //handle decompression of gzip content
+			//GzipDecompressingEntity entity = new GzipDecompressingEntity(response.getEntity());
 		    HttpEntity entity = response.getEntity();
-			Header ceHeader = entity.getContentEncoding();
+			//Header ceHeader = entity.getContentEncoding();
 			
-		    if (entity != null) {
+		   if (entity != null) {
 		    	
-		    	if (ceHeader != null) {
+		    	/*if (ceHeader != null) {
 		    		HeaderElement[] codecs = ceHeader.getElements();
 		    		for (HeaderElement codec : codecs) {
 		    			if (codec.getName().equalsIgnoreCase("gzip")) {
 		    				response.setEntity(new GzipDecompressingEntity(response.getEntity()));
 		    			}
 		    		}
-		    	}
+		    	}*/
 		    	
 	        	ContentType contentType = ContentType.getOrDefault(entity);
 		        Charset charset = contentType.getCharset();
 		        Reader reader = new InputStreamReader(entity.getContent(), charset);
-		        System.out.println(reader);
+		        Gson gson = new GsonBuilder().create();
+		        BusinessesListDO businessesList = gson.fromJson(reader, BusinessesListDO.class);
+		        System.out.println(businessesList);
+		        
+		        /*System.out.println(reader);
+		        int data = reader.read();
+		        while(data != -1){
+		            char theChar = (char) data;
+		            data = reader.read();
+		            System.out.print(theChar);
+		        }*/
+		        reader.close();
 		    }
 		} finally {
 		    response.close();
