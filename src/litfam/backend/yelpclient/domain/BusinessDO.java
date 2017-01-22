@@ -104,6 +104,7 @@ public class BusinessDO {
 		}
 		return getName() + "\n" + getDisplay_phone() + 
 				"\n" + getLocation() + "\n" 
-				+ closedOrOpenStr + "\nCoordinates: " + getCoordinates() + "}\n" + "Distance: " + getDistance() + "\n";
+				+ closedOrOpenStr + "\nCoordinates: " + getCoordinates() + "}\n" + "Distance: " + getDistance() + "\n"
+				+ "Webpage: " + getUrl();
 	}
 }

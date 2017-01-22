@@ -27,34 +27,29 @@ import org.apache.http.message.BasicNameValuePair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import litfam.backend.yelpclient.domain.BusinessDO;
 import litfam.backend.yelpclient.domain.BusinessesListDO;
 
 public class YelpClient {
 	
+	//tied to my yelp account
 	public static final String AUTH_ID = "RZI8UapvZI8IdtCXsRhadw";
+	
 	public static final String AUTH_SECRET = "v3zOykZ2JVcjIwtowCOqA2yHmyOI8oNATkSw0bAKNnNaSIoTHKSCSXU0LQJPx1aH";
 	public static final String AUTH_URL = "https://api.yelp.com/oauth2/token";
 	
-	public static final String QUERY_URL = "https://api.yelp.com/v3/businesses/search?";
-	public static final String TEST_QUERY = "term=fancy&latitude=38.8736&longitude=-77.3899";
+	public static final String BASE_BUSINESS_QUERY = "https://api.yelp.com/v3/businesses/search?";
 
-	private static AuthenticationPojo authObj;
+	private AuthenticationPojo authObj;
 	
-	public static void main(String[] args) {
-		authenticateClient();
-		try {
-			queryClient();
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	private static YelpClient singletonInstance;
+	
+	private YelpClient(){
+		authObj = null;
 	}
 	
 	//send request with client id and secret and transfer response into an authentication object with key for OAuth2
-	public static void authenticateClient() {
+	private AuthenticationPojo authenticateClient() {
 
 		CloseableHttpClient httpClient = HttpClients.createDefault();
 		HttpPost httpPost = new HttpPost(AUTH_URL);
@@ -64,110 +59,107 @@ public class YelpClient {
 		formparams.add(new BasicNameValuePair("grant_type", "client_credentials"));
 		formparams.add(new BasicNameValuePair("client_id", AUTH_ID));
 		formparams.add(new BasicNameValuePair("client_secret", AUTH_SECRET));
+		
 		//set body of POST with parameters in UTF-8 format
-		UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams, Consts.UTF_8);	
-		httpPost.setEntity(entity);	
-		
-		
-		//inner class response handler
-		ResponseHandler<AuthenticationPojo> rh = new ResponseHandler<AuthenticationPojo>() {
-
-			@Override
-			public AuthenticationPojo handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-				StatusLine statusLine = response.getStatusLine();
-		        HttpEntity entity = response.getEntity();
-		        //a status greater than 300 is an error
-		        if (statusLine.getStatusCode() >= 300) {
-		            throw new HttpResponseException(
-		                    statusLine.getStatusCode(),
-		                    statusLine.getReasonPhrase());
-		        }
-		        if (entity == null) {
-		            throw new ClientProtocolException("Response contains no content");
-		        }
-
-		        ContentType contentType = ContentType.getOrDefault(entity);
-		        Charset charset = contentType.getCharset();
-		        //read character stream
-		        Reader reader = new InputStreamReader(entity.getContent(), charset);
-		        //convert json to pogo using gson
-		        Gson gson = new GsonBuilder().create();
-		        AuthenticationPojo authPojo = gson.fromJson(reader, AuthenticationPojo.class);
-		        reader.close();
-		        return authPojo;       
-			}
-
-		};
-		
+		UrlEncodedFormEntity requestEntity = new UrlEncodedFormEntity(formparams, Consts.UTF_8);	
+		httpPost.setEntity(requestEntity);	
+		CloseableHttpResponse response;
 		try {
-			authObj = httpClient.execute(httpPost, rh);
-			setAuthObj(authObj);
-			System.out.println(authObj);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//execute request and get response
+			response = httpClient.execute(httpPost);
+			
+			//status of response
+			StatusLine responseStatus = response.getStatusLine();
+	
+	        //a status greater than 300 is an error
+	        if (responseStatus.getStatusCode() >= 300) {
+	        	System.out.println("Http Response error code: " + responseStatus.getStatusCode());
+	        	return null;
+	        }
+	        HttpEntity responseEntity = response.getEntity();
+	        if (responseEntity != null) {
+	            ContentType contentType = ContentType.getOrDefault(responseEntity);
+	            Charset charset = contentType.getCharset();
+	            //read character stream
+	            Reader reader = new InputStreamReader(responseEntity.getContent(), charset);
+	            //convert json to pogo using gson
+	            Gson gson = new GsonBuilder().create();
+	            authObj = gson.fromJson(reader, AuthenticationPojo.class);
+	            reader.close();
+	        }
+            response.close();
+		}catch(Exception e) {
+			System.out.println(e);;
 		}
 
+		return authObj;
 	}
 	
 	//sent request with OAuth2 key and transfer response into businesses object
-	public static void queryClient() throws ClientProtocolException, IOException {
+	//TODO: should take a param query, can make a query maker later that can use different urls
+	public BusinessesListDO queryClientForBusinesses(String query) throws ClientProtocolException, IOException {
+		BusinessesListDO businessesList = null;
+		AuthenticationPojo authPojo = getAuthObj();
 		CloseableHttpClient httpClient = HttpClients.createDefault();
-		HttpGet httpGet = new HttpGet(QUERY_URL+TEST_QUERY);	
-		httpGet.addHeader("Authorization", (getAuthObj().getToken_type() +" "+getAuthObj().getAccess_token()));
+		//create a new get request using the 
+		HttpGet httpGet = new HttpGet(query);	
+		//add the authorization token to the header
+		httpGet.addHeader("Authorization", (authPojo.getToken_type() +" "+authPojo.getAccess_token()));
 		CloseableHttpResponse response = httpClient.execute(httpGet);
 		
-		try {
-		    
-		    //handle decompression of gzip content
-			//GzipDecompressingEntity entity = new GzipDecompressingEntity(response.getEntity());
+		//status of response
+		StatusLine responseStatus = response.getStatusLine();
+
+        //a status greater than 300 is an error
+        if (responseStatus.getStatusCode() >= 300) {
+        	System.out.println("Http Response error code: " + responseStatus.getStatusCode());
+        	return null;
+        }
+		
+		try {		    
 		    HttpEntity entity = response.getEntity();
-			//Header ceHeader = entity.getContentEncoding();
 			
-		   if (entity != null) {
-		    	
-		    	/*if (ceHeader != null) {
-		    		HeaderElement[] codecs = ceHeader.getElements();
-		    		for (HeaderElement codec : codecs) {
-		    			if (codec.getName().equalsIgnoreCase("gzip")) {
-		    				response.setEntity(new GzipDecompressingEntity(response.getEntity()));
-		    			}
-		    		}
-		    	}*/
-		    	
+		   if (entity != null) {		    	
 	        	ContentType contentType = ContentType.getOrDefault(entity);
 		        Charset charset = contentType.getCharset();
 		        Reader reader = new InputStreamReader(entity.getContent(), charset);
 		        Gson gson = new GsonBuilder().create();
-		        BusinessesListDO businessesList = gson.fromJson(reader, BusinessesListDO.class);
-		        System.out.println(businessesList);
+		        businessesList = gson.fromJson(reader, BusinessesListDO.class);
 		        
-		        /*System.out.println(reader);
-		        int data = reader.read();
-		        while(data != -1){
-		            char theChar = (char) data;
-		            data = reader.read();
-		            System.out.print(theChar);
-		        }*/
 		        reader.close();
 		    }
 		} finally {
 		    response.close();
 		}
-		
-		
-		
-		
+		return businessesList;
 	}
+	
+	//TODO: make separate method to get the stream as a string for help debugging
+    /*System.out.println(reader);
+    int data = reader.read();
+    while(data != -1){
+        char theChar = (char) data;
+        data = reader.read();
+        System.out.print(theChar);
+    }*/
 
-	public static AuthenticationPojo getAuthObj() {
+	public AuthenticationPojo getAuthObj() {
+		if(authObj == null) {
+			return authenticateClient();
+		}
 		return authObj;
 	}
 
-	public static void setAuthObj(AuthenticationPojo authObj) {
-		YelpClient.authObj = authObj;
+	public void setAuthObj(AuthenticationPojo authObj) {
+		this.authObj = authObj;
 	}
-
+	
+	public static YelpClient getInstance() {
+		if (singletonInstance == null) {
+			singletonInstance = new YelpClient();
+		}
+		return singletonInstance;
+	}
 
 }
 	
