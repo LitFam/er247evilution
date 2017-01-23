@@ -28,6 +28,8 @@ public class QueryBuilder {
 	private String latitude;
 	private String longitude;
 	
+	private String query;
+	
 	private static QueryBuilder singletonInstance;
 	
 	private QueryBuilder(){
@@ -43,7 +45,7 @@ public class QueryBuilder {
 		String randomBusinessStr = SEARCH_URL + APPEND_KEYWORD + keyword + DELIMITER + APPEND_LATITUDE + latitude + DELIMITER
 				+ APPEND_LONGITUDE + longitude + DELIMITER + APPEND_OFFSET + offset + DELIMITER + APPEND_LIMIT + limit;
 		System.out.println(randomBusinessStr);
-		
+		query = randomBusinessStr;
 		return randomBusinessStr;
 	}
 	
@@ -57,7 +59,7 @@ public class QueryBuilder {
 		String randomBusinessStr = SEARCH_URL + APPEND_KEYWORD + keyword + DELIMITER + APPEND_LATITUDE + latitude + DELIMITER
 				+ APPEND_LONGITUDE + longitude + DELIMITER + APPEND_OFFSET + offset + DELIMITER + APPEND_LIMIT + limit;
 		System.out.println(randomBusinessStr);
-		
+		query = randomBusinessStr;
 		return randomBusinessStr;
 	}
 	
@@ -69,7 +71,7 @@ public class QueryBuilder {
 		String randomBusinessStr = SEARCH_URL + APPEND_KEYWORD + keyword + DELIMITER + APPEND_LATITUDE + latitude + DELIMITER
 				+ APPEND_LONGITUDE + longitude;
 		System.out.println(randomBusinessStr);
-		
+		query = randomBusinessStr;
 		return randomBusinessStr;
 	}
 
@@ -113,6 +115,14 @@ public class QueryBuilder {
 		this.limit = limit;
 	}
 
+	public String getQuery() {
+		return query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
+
 	public static QueryBuilder getInstance() {
 		if (singletonInstance == null) {
 			singletonInstance = new QueryBuilder();
@@ -121,7 +131,7 @@ public class QueryBuilder {
 	}
 	
 	
-	/*
+	/*Info from yelp about other query properties
 	 * term	string	Optional. Search term (e.g. "food", "restaurants"). If term isn’t included we search everything. The term keyword also accepts business names such as "Starbucks".
 location	string	Required if either latitude or longitude is not provided. Specifies the combination of "address, neighborhood, city, state or zip, optional country" to be used when searching for businesses.
 latitude	decimal	Required if location is not provided. Latitude of the location you want to search near by.

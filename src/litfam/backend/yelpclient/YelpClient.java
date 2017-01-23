@@ -34,8 +34,9 @@ public class YelpClient {
 	
 	//tied to my yelp account
 	public static final String AUTH_ID = "RZI8UapvZI8IdtCXsRhadw";
-	
 	public static final String AUTH_SECRET = "v3zOykZ2JVcjIwtowCOqA2yHmyOI8oNATkSw0bAKNnNaSIoTHKSCSXU0LQJPx1aH";
+	
+	//link to yelp authorization
 	public static final String AUTH_URL = "https://api.yelp.com/oauth2/token";
 	
 	public static final String BASE_BUSINESS_QUERY = "https://api.yelp.com/v3/businesses/search?";
@@ -97,12 +98,12 @@ public class YelpClient {
 	
 	//sent request with OAuth2 key and transfer response into businesses object
 	//TODO: should take a param query, can make a query maker later that can use different urls
-	public BusinessesListDO queryClientForBusinesses(String query) throws ClientProtocolException, IOException {
+	public BusinessesListDO queryClientForBusinesses(QueryBuilder queryBuilder) throws ClientProtocolException, IOException {
 		BusinessesListDO businessesList = null;
 		AuthenticationPojo authPojo = getAuthObj();
 		CloseableHttpClient httpClient = HttpClients.createDefault();
 		//create a new get request using the 
-		HttpGet httpGet = new HttpGet(query);	
+		HttpGet httpGet = new HttpGet(queryBuilder.getQuery());	
 		//add the authorization token to the header
 		httpGet.addHeader("Authorization", (authPojo.getToken_type() +" "+authPojo.getAccess_token()));
 		CloseableHttpResponse response = httpClient.execute(httpGet);
