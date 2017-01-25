@@ -1,0 +1,23 @@
+Adsense/Sponsored ads from local businesses
+*Auto detect Location, generate ad for users as a suggestion for where to eat nearby (similar to groupons local deals function)
+*if location is within or near a certain zicode/radius of the business, automatically generate an promo code or coupon/voucher to homepage of app as an ad overlay
+*Businesses will pay out a certan fee or percentage of sales/organic reach through this method
+*Will meet business owners in person to determine potential candidates
+*Can create plans, marketing budget per business feature per time alloted.
+Businesses will create their own ads, or we can generate the graphics straight from the yelp client/parsed images (e.g.lunch special 20%off +picture)
+-
+-Make app recommendations based on prior searches/suggestions
+-
+
+
+
+Pros:*consult local businesses that are up and coming(potentially dont have a lot of traffic or web presence, #of reviews)
+	-Could potentially yield some ad revenue for us to fund the launch of the project
+	-can yield exposure to struggling businesses, hard to find places, help users before even using the app
+	-
+Cons:*dont know what the app will look like
+	-not sure how to exactly use Adsense or targeted ads 
+	-potential concerns from a standpoint of privacy if the app has permission to access GPS/location services
+	-Could end up leaving users with a negative outlook on the app as theymight be overwhelmed by advertisements.
+	-Have to meet businesses owners in person, negotiate a deal that mutually benefits both parties
+	-Makes a business demand certain results for their money if we only have a small app reach, may dissapoint app owners
