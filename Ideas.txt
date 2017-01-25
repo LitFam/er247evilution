@@ -1,6 +1,6 @@
 Adsense/Sponsored ads from local businesses
 *Auto detect Location, generate ad for users as a suggestion for where to eat nearby (similar to groupons local deals function)
-*if location is within or near a certain zicode/radius of the business, automatically generate an promo code or coupon/voucher to homepage of app as an ad overlay
+*if location is within or near a certain zipcode/radius of the business, automatically generate an promo code or coupon/voucher to homepage of app as an ad overlay
 *Businesses will pay out a certan fee or percentage of sales/organic reach through this method
 *Will meet business owners in person to determine potential candidates
 *Can create plans, marketing budget per business feature per time alloted.
